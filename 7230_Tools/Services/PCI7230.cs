@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace _7230_Tools.Services
 {
     public static class PCI7230
     {
         // 引入 APS SDK 函數 (初始化 PCI-7230)
-        [DllImport("APS168.dll")]
-        public static extern int APS_initial(ref int boardId, int mode);
+        [DllImport("PCI-Dask.dll")]
+        public static extern short Register_Card(ushort cardType, ushort cardNum);
 
-        // 設置數字輸出
-        [DllImport("APS168.dll")]
-        public static extern int APS_write_d_output(int BoardID, int Port, uint DO_Value);
+        [DllImport("PCI-Dask.dll")]
+        public static extern short Release_Card(ushort cardHandle);
 
-        // 讀取數字輸入
-        [DllImport("APS168.dll")]
-        public static extern int APS_read_d_input(int BoardID, int Port, out uint DI_Value);
+        [DllImport("PCI-Dask.dll")]
+        public static extern short DI_ReadPort(ushort cardHandle, ushort port, out uint value);
 
-        // 關閉 PCI-7230
-        [DllImport("APS168.dll")]
-        public static extern int APS_close();
+        [DllImport("PCI-Dask.dll")]
+        public static extern short DO_WritePort(ushort cardHandle, ushort port, uint value);
     }
 
 }

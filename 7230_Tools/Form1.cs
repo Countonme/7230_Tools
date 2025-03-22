@@ -1,19 +1,13 @@
-﻿using _7230_Tools.Services;
+﻿using System;
+using _7230_Tools.Services;
 using Sunny.UI;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace _7230_Tools
 {
     public partial class Form1 : UIForm
-    {
+    {  // 2. 定义 PCI-7230 设备类型 (从文档或头文件获取)
+        const ushort PCI_7230 = 0x20;  // **设备型号编号**
+        const ushort CARD_NUMBER = 0;  // **设备编号（通常是 0）**
 
         public Form1()
         {
@@ -23,28 +17,42 @@ namespace _7230_Tools
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            int boardId = 0;
-
-            // 初始化板卡
-            if (PCI7230.APS_initial(ref boardId, 0) != 0)
+            // 3. 设备注册
+            short cardHandle = PCI7230.Register_Card(PCI_7230, CARD_NUMBER);
+            if (cardHandle < 0)
             {
-               this.ShowErrorDialog("初始化失敗，請檢查設備連接。");
+                Console.WriteLine($"设备注册失败, 错误代码: {cardHandle}");
                 return;
             }
+            Console.WriteLine("PCI-7230 设备注册成功!");
 
-            this.ShowSuccessNotifier("PCI-7230 初始化成功！");
+            // 4. 读取 DI 端口
+            uint diValue;
+            short diStatus = PCI7230.DI_ReadPort((ushort)cardHandle, 0, out diValue);
+            if (diStatus == 0)
+            {
+                Console.WriteLine($"DI 端口数据: {Convert.ToString(diValue, 2).PadLeft(16, '0')}");
+            }
+            else
+            {
+                Console.WriteLine($"读取 DI 失败, 错误代码: {diStatus}");
+            }
 
-            // 寫入數字輸出 (例如 Port 0, 開啟第 1、3 位)
-            PCI7230.APS_write_d_output(boardId, 0, 0b00000101);  // 0x05 => 第1、3位高電平
-            Console.WriteLine("已設置數字輸出：0x05");
+            // 5. 写入 DO 端口
+            uint doValue = 0x000F; // 低 4 位输出高电平 (0000 0000 0000 1111)
+            short doStatus = PCI7230.DO_WritePort((ushort)cardHandle, 0, doValue);
+            if (doStatus == 0)
+            {
+                Console.WriteLine("DO 端口写入成功!");
+            }
+            else
+            {
+                Console.WriteLine($"写入 DO 失败, 错误代码: {doStatus}");
+            }
 
-            // 讀取數字輸入
-            PCI7230.APS_read_d_input(boardId, 0, out uint diValue);
-            Console.WriteLine($"數字輸入狀態：0x{diValue:X2}");
-
-            // 關閉 PCI-7230
-            PCI7230.APS_close();
-            Console.WriteLine("PCI-7230 已關閉。"); throw new NotImplementedException();
+            // 6. 释放设备
+            PCI7230.Release_Card((ushort)cardHandle);
+            Console.WriteLine("设备释放完成.");
         }
     }
 }

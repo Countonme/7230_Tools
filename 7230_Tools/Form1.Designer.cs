@@ -33,7 +33,7 @@
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1072, 659);
             this.Name = "Form1";
             this.Text = "PCI-7230 Tools";
             this.ZoomScaleRect = new System.Drawing.Rectangle(15, 15, 800, 450);
